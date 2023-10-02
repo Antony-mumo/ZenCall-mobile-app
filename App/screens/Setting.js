@@ -1,34 +1,33 @@
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Checkbox from "expo-checkbox";
 import { useContext, useEffect, useState } from "react";
 import {
-  View,
-  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
   ScrollView,
   TextInput,
-  Alert,
-  ActivityIndicator,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import StyleSheet from "react-native-media-query";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import Checkbox from "expo-checkbox";
-import { Ionicons, AntDesign } from "@expo/vector-icons";
-import StyleSheet from "react-native-media-query";
-
-import { AuthContext } from "../contexts/AuthContext";
-import tw from "../tw";
-import { styles as globalStyles } from "../styles/globalStyles";
-import { colors } from "../styles/colors";
-import { api } from "../services/api";
-import { handleCallAiPhone } from "../utlis/ui";
-import { ButtonText } from "../components/elements/Button";
 import SafeAreaContainer from "../components/SafeAreaContainer";
 import ViewContainer from "../components/ViewContainer";
-import Typography from "../components/elements/Text";
+import { ButtonText } from "../components/elements/Button";
 import Input from "../components/elements/Input";
-import { Space } from "../components/elements/Space";
 import { Select } from "../components/elements/Select";
+import { Space } from "../components/elements/Space";
+import Typography from "../components/elements/Text";
+import { AuthContext } from "../contexts/AuthContext";
+import { api } from "../services/api";
+import { colors } from "../styles/colors";
+import { styles as globalStyles } from "../styles/globalStyles";
+import tw from "../tw";
+import { handleCallAiPhone } from "../utlis/ui";
 
 const placeholderInputPromps =
   "Your prompt to ChatGPT in the language you want. Explain how you want ChatGPT to present itself to \
@@ -37,6 +36,7 @@ const placeholderInputPromps =
 const LANGUAGE_OPTIONS = [
   { label: "English", value: "en-US" },
   { label: "French", value: "fr-FR" },
+  { label: "Spanish", value: "es-ES" },
 ];
 
 const { ids, styles } = StyleSheet.create({
@@ -86,7 +86,12 @@ const { ids, styles } = StyleSheet.create({
   },
 });
 
-const CheckBoxAndTextComponent = ({ value, onValueChange, text, textSize }) => {
+const CheckBoxAndTextComponent = ({
+  value,
+  onValueChange,
+  text,
+  textSize,
+}) => {
   return (
     <View style={styles.checkBoxAndTextContainer}>
       <Checkbox value={value} onValueChange={onValueChange} />
@@ -171,6 +176,7 @@ const AdditionRecords = ({
 
   const handleChangeLinkComponentInput = (index, key, value) => {
     handeInputChangeShared({ [valueKey]: "" });
+
     setRecords(() => {
       const newLinkData = [...records];
       newLinkData[index][key] = value;
@@ -201,9 +207,12 @@ const AdditionRecords = ({
           text: "Sure",
           onPress: async () => {
             setErrors({ ...errors, [valueKey]: null });
+
             if (id) {
               if (isLoadingDelete) return;
+
               setIsLoadingDelete(true);
+
               api
                 .delete(`${path}${id}/`)
                 .then((res) => {
@@ -259,7 +268,6 @@ const AdditionRecords = ({
 const Setting = ({ navigation }) => {
   const userLinksPath = "/auth/user-link/";
   const userforwardsPath = "/auth/user-forward/";
-
   const { user, setUser, isLoading, setIsLoading } = useContext(AuthContext);
   const [email, setEmail] = useState(user.email || "");
   const [prompt, setPrompt] = useState(user.prompt || "");
@@ -278,6 +286,7 @@ const Setting = ({ navigation }) => {
 
   useEffect(() => {
     setIsLoadingLinks(true);
+
     api
       .get(userLinksPath)
       .then((res) => res.data)
@@ -288,6 +297,7 @@ const Setting = ({ navigation }) => {
       .finally(() => setIsLoadingLinks(false));
 
     setIsLoadingForwards(true);
+
     api
       .get(userforwardsPath)
       .then((res) => res.data)
@@ -305,6 +315,7 @@ const Setting = ({ navigation }) => {
 
     const postOrPatchRecord = async (path, data, valueKey) => {
       let res;
+
       if (data.id) {
         res = await api.patch(`${path}${data.id}/`, {
           name: data.name,
@@ -316,6 +327,7 @@ const Setting = ({ navigation }) => {
           [valueKey]: data[valueKey],
         });
       }
+
       return res.data;
     };
 
@@ -374,11 +386,13 @@ const Setting = ({ navigation }) => {
       .catch((error) => {
         const err = {};
         const errorRes = error?.response?.data;
+
         if (error?.response?.status == 400) {
           err["email"] = errorRes?.email;
         } else {
           err["message"] = "Something went wrong...!";
         }
+
         setErrors(err);
       })
       .finally(() => setIsLoading(false));
@@ -402,8 +416,11 @@ const Setting = ({ navigation }) => {
           text: "Sure",
           onPress: async () => {
             setErrors({ ...errors, deleteAccount: null });
+
             if (isLoadingDeleteAccount || isLoadingDelete) return;
+
             setIsLoadingDeleteAccount(true);
+
             api
               .delete("/auth/me/")
               .then((res) => {
@@ -465,7 +482,6 @@ const Setting = ({ navigation }) => {
               onChangeText={(inputValue) => setPrompt(inputValue)}
               onChange={() => setSuccessText("")}
             />
-
             <Input
               placeholder="Intro sentence"
               value={intro}
@@ -473,7 +489,6 @@ const Setting = ({ navigation }) => {
               onChange={handeInputChangeShared}
               error={errors.intro}
             />
-
             <Space />
             <AdditionRecords
               isLoading={isLoadingLinks}
@@ -486,7 +501,6 @@ const Setting = ({ navigation }) => {
               handeInputChangeShared={handeInputChangeShared}
               path={userLinksPath}
             />
-
             <Space />
             <AdditionRecords
               isLoading={isLoadingForwards}
@@ -499,7 +513,6 @@ const Setting = ({ navigation }) => {
               handeInputChangeShared={handeInputChangeShared}
               path={userforwardsPath}
             />
-
             <Space />
             <Input
               value={user.phone}
@@ -513,7 +526,11 @@ const Setting = ({ navigation }) => {
               error={errors.email}
               inputMode="email"
             />
-            <Select value={language} options={LANGUAGE_OPTIONS} onChange={setLanguage} />
+            <Select
+              value={language}
+              options={LANGUAGE_OPTIONS}
+              onChange={setLanguage}
+            />
             <View style={{ ...tw("flex-row justify-between") }}>
               <Typography
                 style={[
@@ -540,14 +557,16 @@ const Setting = ({ navigation }) => {
                 {successText || errors.message}
               </Typography>
             ) : null}
-
             <View
               style={{
                 ...tw("flex-row items-center justify-between mt-1 mb-5"),
               }}
             >
               <ButtonText
-                styleText={[styles.textChangePassword, { ...tw("text-red") }]}
+                styleText={[
+                  styles.textChangePassword,
+                  { ...tw("text-red") },
+                ]}
                 textSize={wp("5%")}
                 text="Delete account"
                 isOnlyText

@@ -35,6 +35,9 @@
         "projectId": "bbf41cc0-e078-476f-8007-1dd400c06319"
       }
     },
-    "androidStatusBarColor": "#004AAD"
+    "androidStatusBarColor": "#004AAD",
+    "plugins": [
+      "expo-localization"
+    ]
   }
 }
